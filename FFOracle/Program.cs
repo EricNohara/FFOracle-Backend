@@ -31,22 +31,21 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Frontend CORS policy
+// --- CORS Policy ---
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(
-                  "http://localhost:3000",
-                  "http://localhost:5173",  // Vite default
-                  "http://localhost:3001",  // Alternative React port
-                  "http://localhost:8080",   // Alternative dev server
-                  "https://fforacle.vercel.app",
-                  "https://fforacle-gegydpfvezf5axc5.centralus-01.azurewebsites.net"
-              )
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:3001",
+            "http://localhost:8080",
+            "https://fforacle.vercel.app"
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -66,12 +65,10 @@ builder.Services.AddScoped<EmailService>();
 
 var stripeSection = builder.Configuration.GetRequiredSection("Stripe");
 var stripeSecretKey = stripeSection["SecretKey"];
-var stripePublishableKey = stripeSection["PublishableKey"];
 
 if (string.IsNullOrEmpty(stripeSecretKey))
     throw new InvalidOperationException("Stripe configuration is missing! Add your keys to appsettings.json.");
 
-// Set global Stripe API key
 Stripe.StripeConfiguration.ApiKey = stripeSecretKey;
 
 #endregion
@@ -81,7 +78,9 @@ var app = builder.Build();
 
 #region --- Middleware Pipeline ---
 
-app.UseCors();
+app.UseRouting();        // REQUIRED before UseCors
+
+app.UseCors();           // MUST be before authentication/authorization
 
 if (app.Environment.IsDevelopment())
 {
@@ -89,8 +88,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
 app.UseAuthorization();
+
+// Required for Azure App Service: handle preflight OPTIONS
+app.MapMethods("{*path}", new[] { "OPTIONS" }, () => Results.Ok());
 
 app.MapControllers();
 
