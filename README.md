@@ -17,9 +17,9 @@
 FFOracle is a comprehensive fantasy football assistant manager application that helps users make data-driven decisions for their fantasy football leagues. 
 The backend provides a robust RESTful API that powers AI-driven roster recommendations, player comparisons, league performance tracking, and secure payment processing.
 
-**Frontend Repository:** https://github.com/EricNohara/Fantasy-Football-Assistant-Manager-Frontend  
-**Updater Repository** https://github.com/EricNohara/FFOracle-Updater/
-**Production:** Deployed on Azure App Service
+- **Frontend Repository:** https://github.com/EricNohara/Fantasy-Football-Assistant-Manager-Frontend
+- **Updater Repository** https://github.com/EricNohara/FFOracle-Updater/
+- **Production:** Deployed on Azure App Service
 
 ## Features
 - **Real-Time NFL Data** - Integration with NFLVerse and ESPN APIs for current player statistics
@@ -147,7 +147,9 @@ After downloading, open the command line and run "stripe login". Follow the inst
 # Testing
 
 The app has been deployed to the link https://fforacle.vercel.app. Testing of the features can be done so there. 
+
 If looking to test the app locally: 
+
 Most features of this test implementation can be tested using the **auto-generated Swagger UI**.
 
 To start the backend:
