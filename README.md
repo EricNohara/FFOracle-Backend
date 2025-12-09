@@ -14,21 +14,20 @@
 
 ## Project Overview
 
-This is the research project demo version of the backend for our fantasy football assistant manager app. The repo for the frontend can be found here:
-https://github.com/EricNohara/Fantasy-Football-Assistant-Manager-Frontend
+FFOracle is a comprehensive fantasy football assistant manager application that helps users make data-driven decisions for their fantasy football leagues. 
+The backend provides a robust RESTful API that powers AI-driven roster recommendations, player comparisons, league performance tracking, and secure payment processing.
 
-## Project Purpose
-
-The purpose of this research project was to explore the tech stack and API options available to us and test out implementing our selections. More specifically, we have researched databases, AI APIs, NFL statistic APIs, and payment APIs. We selected and tested Supabase, OpenAI API, NFLVerse API, and Stripe API. The version of our app on this test branch contains basic functionality tests for each of these four components.
+**Frontend Repository:** https://github.com/EricNohara/Fantasy-Football-Assistant-Manager-Frontend  
+**Updater Repository** https://github.com/EricNohara/FFOracle-Updater/
+**Production:** Deployed on Azure App Service
 
 ## Features
-
-- Swagger UI for testing APIs
-- Card payment frontend UI for mock Stripe payments
-- Supabase database table querying
-- ChatGPT querying
-- Retrieving and parsing data from NFLVerse
-- Making mock payments to Stripe
+- **Real-Time NFL Data** - Integration with NFLVerse and ESPN APIs for current player statistics
+- **Automated Updates** - Weekly updates for player stats, team data, game schedules, and betting odds
+- **Comprehensive Stats** - Season stats, weekly stats, defensive stats, betting lines, and injury reports
+- **AI-driven Roster Recommendations** - Get personalized start/sit recommendations for entire rosters based on player stats, matchups, betting lines, and custom scoring settings
+- **Player Comparison Tool** - Compare any two players with detailed AI analysis and recommendations
+- **League Performance Tracking** - Track weekly performance, accuracy metrics, and roster optimization across multiple weeks
 
 ## Tech Stack
 
@@ -69,6 +68,17 @@ respectively. On downloading, navigate to each solution directory from the comma
 
   //Indicates hosts from which requests can be accepted. Currently set to accept all.
   "AllowedHosts": "*"
+  "Smtp": {
+    "Host": ,
+    "Port": ,
+    "Username": ,
+    "Password": ,
+    "UseSSL": ,
+    "UseStartTls": ,
+    "SenderName": ,
+    "SenderEmail": 
+  }
+
 }
 ```
 
@@ -79,19 +89,65 @@ After downloading, open the command line and run "stripe login". Follow the inst
 
 ## Api Endpoints
 
-| **Category**      | **Method** | **Endpoint**                                  | **Description**                                                                                |
-| ----------------- | ---------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **ChatGPT**       | `POST`     | `/api/ChatGPT/test`                           | Test route that queries the OpenAI API with a static prompt.                                   |
-| **ChatGPT**       | `POST`     | `/api/ChatGPT/chat`                           | Sends a custom query to the OpenAI API.                                                        |
-| **Players**       | `POST`     | `/api/Players/all`                            | Fetches all offensive players from NFL Verse, parses the data, and inserts them into Supabase. |
-| **Players**       | `DELETE`   | `/api/Players/all`                            | Deletes all players from Supabase.                                                             |
-| **Stripe**        | `POST`     | `/api/Stripe/create-payment-intent`           | Creates Stripe payment intent and sends to client.                                             |
-| **StripeWebhook** | `POST`     | `/api/StripeWebhook/check-payment-completion` | Webhook checking Stripe for if a payment was completed.                                        |
-| **SupaBase**      | `GET`      | `/api/SupaBase/{table}`                       | Gets the data from a specified table from Supabase.                                            |
-| **Users**         | `POST`     | `/api/Users/signup`                           | Creates a new user in Supabase.                                                                |
+### Authentication & User Management
+| **Method** | **Endpoint**                    | **Description**                          | **Auth Required** |
+| ---------- | ------------------------------- | ---------------------------------------- | ----------------- |
+| `POST`     | `/api/Users/signup`             | Register a new user                      | No                |
+| `POST`     | `/api/Users/login`              | Authenticate and receive JWT token       | No                |
+| `POST`     | `/api/Users/request-password-reset` | Request password reset email         | No                |
+| `POST`     | `/api/Users/reset-password`     | Reset password with token                | No                |
+| `PUT`      | `/api/Users`                    | Update user information                  | Yes               |
+| `DELETE`   | `/api/Users`                    | Delete user account                      | Yes               |
+
+### AI-Powered Features
+| **Method** | **Endpoint**                                  | **Description**                          | **Auth Required** | **Tokens Cost** |
+| ---------- | --------------------------------------------- | ---------------------------------------- | ----------------- | --------------- |
+| `GET`      | `/api/RosterPrediction?leagueId={id}`         | Get AI roster recommendations            | Yes               | 10 tokens       |
+| `GET`      | `/api/PlayerComparison/{id1}/{id2}/{position}?leagueId={id}` | Compare two players | Yes         | 1 token         |
+
+### League Management
+| **Method** | **Endpoint**                    | **Description**                          | **Auth Required** |
+| ---------- | ------------------------------- | ---------------------------------------- | ----------------- |
+| `POST`     | `/api/GetUserData/create-league` | Create a new fantasy league             | Yes               |
+| `GET`      | `/api/GetUserData/user-leagues` | Get all leagues for authenticated user   | Yes               |
+| `GET`      | `/api/GetUserData/league/{id}`  | Get detailed league information          | Yes               |
+| `PUT`      | `/api/UpdateUserLeague/roster-settings` | Update league roster settings      | Yes               |
+| `PUT`      | `/api/UpdateUserLeague/scoring-settings` | Update league scoring settings    | Yes               |
+| `POST`     | `/api/UpdateUserLeague/add-member` | Add player/defense to league roster | Yes               |
+| `DELETE`   | `/api/UpdateUserLeague/remove-member` | Remove player/defense from roster | Yes               |
+| `PUT`      | `/api/UpdateUserLeague/update-picks` | Update start/sit picks for players | Yes               |
+
+### League Performance
+| **Method** | **Endpoint**                               | **Description**                          | **Auth Required** |
+| ---------- | ------------------------------------------ | ---------------------------------------- | ----------------- |
+| `GET`      | `/api/LeaguePerformance/{leagueId}/week/{week}` | Get league performance metrics      | Yes               |
+
+### NFL Data
+| **Method** | **Endpoint**                    | **Description**                          | **Auth Required** |
+| ---------- | ------------------------------- | ---------------------------------------- | ----------------- |
+| `GET`      | `/api/GetPlayersByPosition?position={pos}` | Get players by position (QB, RB, WR, TE, K) | Yes     |
+| `GET`      | `/api/ESPN/news/nfl`            | Get NFL news from ESPN                   | No                |
+| `GET`      | `/api/ESPN/news/nfl/{playerId}` | Get news for specific player             | No                |
+
+### Payments
+| **Method** | **Endpoint**                           | **Description**                   | **Auth Required** |
+| ---------- | -------------------------------------- | --------------------------------- | ----------------- |
+| `POST`     | `/api/Stripe/create-payment-intent`    | Create Stripe payment intent      | No                |
+| `POST`     | `/api/StripeWebhook/check-payment-completion` | Webhook for payment events | No (Stripe signature) |
+
+### Internal/Admin (Auto-Update)
+| **Method** | **Endpoint**                    | **Description**                          |
+| ---------- | ------------------------------- | ---------------------------------------- |
+| `POST`     | `/api/AutoUpdate/all`           | Run all weekly data updates              |
+| `POST`     | `/api/Players/all`              | Update all NFL player data               |
+| `POST`     | `/api/Team/all`                 | Update all NFL team data                 |
+| `POST`     | `/api/GamesThisWeek/all`        | Update weekly game schedule              |
+
 
 # Testing
 
+The app has been deployed to the link https://fforacle.vercel.app. Testing of the features can be done so there. 
+If looking to test the app locally: 
 Most features of this test implementation can be tested using the **auto-generated Swagger UI**.
 
 To start the backend:
